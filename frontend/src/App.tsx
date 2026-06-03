@@ -7,13 +7,15 @@ import {
   GraduationCap,
   LayoutDashboard,
   LogIn,
+  Moon,
   Search,
   ShieldCheck,
   Sparkles,
+  Sun,
   Wallet,
   X,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type Page =
   | "landing"
@@ -33,6 +35,8 @@ type Achievement = {
   claimed: boolean;
   txHash?: string;
 };
+
+type Theme = "light" | "dark";
 
 const achievements: Achievement[] = [
   {
@@ -80,6 +84,17 @@ function App() {
   const [page, setPage] = useState<Page>("landing");
   const [walletConnected, setWalletConnected] = useState(false);
   const [verifiedCode, setVerifiedCode] = useState("");
+  const [theme, setTheme] = useState<Theme>(() => {
+    const savedTheme = localStorage.getItem("student-wallet-theme");
+
+    if (savedTheme === "dark" || savedTheme === "light") {
+      return savedTheme;
+    }
+
+    return window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light";
+  });
   const walletAddress = "0xA71C...92B4";
 
   const stats = useMemo(
@@ -93,12 +108,20 @@ function App() {
 
   const goToApp = () => setPage("dashboard");
 
+  useEffect(() => {
+    localStorage.setItem("student-wallet-theme", theme);
+  }, [theme]);
+
   return (
-    <div className="app">
+    <div className="app" data-theme={theme}>
       <Navbar
         currentPage={page}
+        theme={theme}
         walletAddress={walletConnected ? walletAddress : undefined}
         onNavigate={setPage}
+        onThemeToggle={() =>
+          setTheme((current) => (current === "dark" ? "light" : "dark"))
+        }
         onWalletToggle={() => setWalletConnected((current) => !current)}
       />
 
@@ -145,13 +168,17 @@ function App() {
 
 function Navbar({
   currentPage,
+  theme,
   walletAddress,
   onNavigate,
+  onThemeToggle,
   onWalletToggle,
 }: {
   currentPage: Page;
+  theme: Theme;
   walletAddress?: string;
   onNavigate: (page: Page) => void;
+  onThemeToggle: () => void;
   onWalletToggle: () => void;
 }) {
   const showWallet = currentPage !== "landing" && currentPage !== "login";
@@ -164,15 +191,25 @@ function Navbar({
         </span>
         <span>Student Achievement Wallet</span>
       </button>
-      {showWallet && (
+      <div className="navActions">
         <button
-          className={walletAddress ? "walletButton connected" : "walletButton"}
-          onClick={onWalletToggle}
+          className="themeToggle"
+          onClick={onThemeToggle}
+          aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+          title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
         >
-          {walletAddress ? <X size={18} /> : <Wallet size={18} />}
-          <span>{walletAddress ?? "Connect Wallet"}</span>
+          {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
         </button>
-      )}
+        {showWallet && (
+          <button
+            className={walletAddress ? "walletButton connected" : "walletButton"}
+            onClick={onWalletToggle}
+          >
+            {walletAddress ? <X size={18} /> : <Wallet size={18} />}
+            <span>{walletAddress ?? "Connect Wallet"}</span>
+          </button>
+        )}
+      </div>
     </header>
   );
 }

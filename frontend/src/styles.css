@@ -34,6 +34,18 @@ button {
     linear-gradient(135deg, rgba(31, 113, 90, 0.08), transparent 36%),
     linear-gradient(225deg, rgba(206, 76, 36, 0.08), transparent 32%),
     #f6f7fb;
+  color: #172033;
+  transition:
+    background 180ms ease,
+    color 180ms ease;
+}
+
+.app[data-theme="dark"] {
+  color: #e5edf6;
+  background:
+    linear-gradient(135deg, rgba(42, 179, 141, 0.16), transparent 36%),
+    linear-gradient(225deg, rgba(234, 115, 77, 0.12), transparent 34%),
+    #0b1120;
 }
 
 .navbar {
@@ -51,8 +63,14 @@ button {
   backdrop-filter: blur(18px);
 }
 
+.app[data-theme="dark"] .navbar {
+  border-bottom-color: rgba(226, 232, 240, 0.1);
+  background: rgba(11, 17, 32, 0.86);
+}
+
 .brand,
 .walletButton,
+.themeToggle,
 .sideNav button,
 .primaryButton,
 .secondaryButton {
@@ -71,6 +89,10 @@ button {
   font-weight: 800;
 }
 
+.app[data-theme="dark"] .brand {
+  color: #f8fafc;
+}
+
 
 .brandMark {
   display: grid;
@@ -83,6 +105,7 @@ button {
 }
 
 .walletButton,
+.themeToggle,
 .primaryButton,
 .secondaryButton {
   min-height: 44px;
@@ -92,6 +115,21 @@ button {
   white-space: nowrap;
 }
 
+.navActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.themeToggle {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  color: #172033;
+  border: 1px solid rgba(23, 32, 51, 0.12);
+  background: #ffffff;
+}
+
 
 .walletButton {
   color: #172033;
@@ -99,10 +137,24 @@ button {
   background: #ffffff;
 }
 
+.app[data-theme="dark"] .themeToggle,
+.app[data-theme="dark"] .walletButton,
+.app[data-theme="dark"] .secondaryButton {
+  color: #e5edf6;
+  border-color: rgba(226, 232, 240, 0.14);
+  background: rgba(15, 23, 42, 0.92);
+}
+
 .walletButton.connected {
   color: #0c513f;
   border-color: rgba(31, 113, 90, 0.28);
   background: #e8f5ef;
+}
+
+.app[data-theme="dark"] .walletButton.connected {
+  color: #9ee6cf;
+  border-color: rgba(42, 179, 141, 0.36);
+  background: rgba(31, 113, 90, 0.24);
 }
 
 .primaryButton {
@@ -115,6 +167,11 @@ button {
   color: #172033;
   border: 1px solid rgba(23, 32, 51, 0.12);
   background: #ffffff;
+}
+
+.app[data-theme="dark"] .primaryButton {
+  background: #2ab38d;
+  box-shadow: 0 14px 28px rgba(42, 179, 141, 0.16);
 }
 
 .landing {
@@ -161,6 +218,15 @@ h1 {
   letter-spacing: 0;
 }
 
+.app[data-theme="dark"] h1,
+.app[data-theme="dark"] h2,
+.app[data-theme="dark"] dd,
+.app[data-theme="dark"] .metric strong,
+.app[data-theme="dark"] .achievementRow strong,
+.app[data-theme="dark"] .profileSection strong {
+  color: #f8fafc;
+}
+
 .pageHeader h1,
 .loginPanel h1 {
   font-size: clamp(1.8rem, 4vw, 3.1rem);
@@ -172,6 +238,20 @@ h1 {
   color: #4b5563;
   font-size: clamp(1.05rem, 2vw, 1.35rem);
   line-height: 1.55;
+}
+
+.app[data-theme="dark"] .heroCopy p,
+.app[data-theme="dark"] .achievementCard p,
+.app[data-theme="dark"] .certificateCard p,
+.app[data-theme="dark"] .certificateMeta,
+.app[data-theme="dark"] .certificateFooter,
+.app[data-theme="dark"] .metric span,
+.app[data-theme="dark"] .profileSection span,
+.app[data-theme="dark"] .achievementRow span,
+.app[data-theme="dark"] dt,
+.app[data-theme="dark"] .verifyResult span,
+.app[data-theme="dark"] label {
+  color: #a8b3c4;
 }
 
 .heroActions,
@@ -202,6 +282,18 @@ h1 {
   box-shadow: 0 24px 70px rgba(31, 39, 55, 0.1);
 }
 
+.app[data-theme="dark"] .certificatePreview,
+.app[data-theme="dark"] .loginPanel,
+.app[data-theme="dark"] .verifyPanel,
+.app[data-theme="dark"] .certificateCard,
+.app[data-theme="dark"] .achievementCard,
+.app[data-theme="dark"] .metric,
+.app[data-theme="dark"] .achievementRow {
+  border-color: rgba(226, 232, 240, 0.1);
+  background: rgba(15, 23, 42, 0.86);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.24);
+}
+
 .certificatePreview {
   display: grid;
   gap: 38px;
@@ -214,6 +306,19 @@ h1 {
       45deg,
       rgba(31, 113, 90, 0.1),
       rgba(31, 113, 90, 0.1) 1px,
+      transparent 1px,
+      transparent 18px
+    );
+}
+
+.app[data-theme="dark"] .certificatePreview {
+  color: #e5edf6;
+  background:
+    linear-gradient(145deg, rgba(15, 23, 42, 0.94), rgba(13, 48, 40, 0.9)),
+    repeating-linear-gradient(
+      45deg,
+      rgba(42, 179, 141, 0.14),
+      rgba(42, 179, 141, 0.14) 1px,
       transparent 1px,
       transparent 18px
     );
@@ -233,6 +338,10 @@ h1 {
 .certificateTop {
   color: #0c513f;
   font-weight: 900;
+}
+
+.app[data-theme="dark"] .certificateTop {
+  color: #9ee6cf;
 }
 
 .certLabel {
@@ -309,6 +418,16 @@ input {
   background: #ffffff;
 }
 
+.app[data-theme="dark"] input {
+  color: #f8fafc;
+  border-color: rgba(226, 232, 240, 0.14);
+  background: rgba(2, 6, 23, 0.72);
+}
+
+.app[data-theme="dark"] input::placeholder {
+  color: #64748b;
+}
+
 .fullWidth {
   width: 100%;
 }
@@ -368,10 +487,20 @@ input {
   font-weight: 800;
 }
 
+.app[data-theme="dark"] .sideNav button {
+  color: #a8b3c4;
+}
+
 .sideNav button.active,
 .sideNav button:hover {
   color: #0c513f;
   background: #e8f5ef;
+}
+
+.app[data-theme="dark"] .sideNav button.active,
+.app[data-theme="dark"] .sideNav button:hover {
+  color: #9ee6cf;
+  background: rgba(42, 179, 141, 0.12);
 }
 
 .content {
@@ -396,6 +525,11 @@ input {
   padding: 24px;
   background: #172033;
   color: #ffffff;
+}
+
+.app[data-theme="dark"] .claimPanel {
+  border-color: rgba(226, 232, 240, 0.1);
+  background: rgba(2, 6, 23, 0.88);
 }
 
 .claimPanel h2 {
@@ -424,6 +558,10 @@ input {
   background: #ffffff;
 }
 
+.app[data-theme="dark"] .achievementRow {
+  background: rgba(15, 23, 42, 0.86);
+}
+
 .rowIcon,
 .cardIcon {
   display: grid;
@@ -433,6 +571,12 @@ input {
   border-radius: 8px;
   color: #ce4c24;
   background: #fff1e8;
+}
+
+.app[data-theme="dark"] .rowIcon,
+.app[data-theme="dark"] .cardIcon {
+  color: #ffb08d;
+  background: rgba(206, 76, 36, 0.14);
 }
 
 .cardGrid,
@@ -476,9 +620,19 @@ input {
   font-weight: 900;
 }
 
+.app[data-theme="dark"] .status {
+  color: #ffb08d;
+  background: rgba(206, 76, 36, 0.18);
+}
+
 .status.claimed {
   color: #0c513f;
   background: #e8f5ef;
+}
+
+.app[data-theme="dark"] .status.claimed {
+  color: #9ee6cf;
+  background: rgba(42, 179, 141, 0.16);
 }
 
 dl {
@@ -524,9 +678,25 @@ dd {
     );
 }
 
+.app[data-theme="dark"] .certificateCard {
+  background:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.94), rgba(17, 24, 39, 0.96)),
+    repeating-linear-gradient(
+      135deg,
+      rgba(94, 126, 231, 0.12),
+      rgba(94, 126, 231, 0.12) 1px,
+      transparent 1px,
+      transparent 16px
+    );
+}
+
 .certificateHeader {
   color: #3f5fb5;
   font-weight: 900;
+}
+
+.app[data-theme="dark"] .certificateHeader {
+  color: #9eb2ff;
 }
 
 .certificateFooter {
@@ -553,6 +723,12 @@ dd {
   color: #0c513f;
   background: #e8f5ef;
   opacity: 0.35;
+}
+
+.app[data-theme="dark"] .verifyResult {
+  color: #9ee6cf;
+  border-color: rgba(42, 179, 141, 0.25);
+  background: rgba(31, 113, 90, 0.2);
 }
 
 .verifyResult.visible {
@@ -595,6 +771,15 @@ dd {
   .navbar {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .navActions {
+    width: 100%;
+    align-items: stretch;
+  }
+
+  .themeToggle {
+    flex: 0 0 44px;
   }
 
   .brand span:last-child,
