@@ -57,7 +57,7 @@ const achievements: Achievement[] = [
   {
     id: "ach-003",
     title: "Dean's Merit Badge",
-    issuer: "Department of CSE",
+    issuer: "Department of Physics",
     date: "2026-03-12",
     category: "Academic",
     score: "Top 5%",
@@ -73,6 +73,7 @@ const navItems: Array<{ id: Page; label: string; icon: typeof LayoutDashboard }>
     { id: "certificates", label: "Certificates", icon: BadgeCheck },
     { id: "verify", label: "Verify", icon: ShieldCheck },
   ];
+
 
 function App() {
   const [page, setPage] = useState<Page>("landing");
@@ -107,6 +108,7 @@ function App() {
       ) : (
         <main className="workspace">
           <Sidebar currentPage={page} onNavigate={setPage} />
+
           <section className="content">
             {page === "dashboard" && (
               <Dashboard
@@ -181,6 +183,7 @@ function LandingPage({
   onStart: () => void;
   onDemo: () => void;
 }) {
+
   return (
     <main className="landing">
       <section className="hero">
@@ -202,6 +205,7 @@ function LandingPage({
             </button>
           </div>
         </div>
+
         <div className="certificatePreview" aria-label="Certificate preview">
           <div className="certificateTop">
             <span>Verified Certificate</span>
@@ -209,7 +213,7 @@ function LandingPage({
           </div>
           <div>
             <p className="certLabel">Awarded to</p>
-            <h2>Arka Sen</h2>
+            <h2>Johnny Cage</h2>
             <p>Hackathon Winner</p>
           </div>
           <div className="certificateMeta">
@@ -228,6 +232,7 @@ function LandingPage({
 }
 
 function LoginPage({ onLogin }: { onLogin: () => void }) {
+
   return (
     <main className="loginPage">
       <section className="loginPanel">
@@ -235,14 +240,17 @@ function LoginPage({ onLogin }: { onLogin: () => void }) {
           <span className="eyebrow">Student access</span>
           <h1>Continue to your achievement dashboard</h1>
         </div>
+
         <label>
           Student ID
           <input type="text" value="SAW-2026-014" readOnly />
         </label>
+
         <label>
           Password
           <input type="password" value="demopass" readOnly />
         </label>
+
         <button className="primaryButton fullWidth" onClick={onLogin}>
           <LogIn size={18} />
           <span>Login</span>
@@ -259,13 +267,14 @@ function Sidebar({
   currentPage: Page;
   onNavigate: (page: Page) => void;
 }) {
+
   return (
     <aside className="sidebar">
       <div className="profileSection">
         <div className="avatar">AS</div>
         <div>
-          <strong>Arka Sen</strong>
-          <span>CSE Student</span>
+          <strong>Johnny Cage</strong>
+          <span>Physics Student</span>
         </div>
       </div>
       <nav className="sideNav">
@@ -301,6 +310,7 @@ function Dashboard({
   onVerify: () => void;
 }) {
   const nextClaim = achievements.find((achievement) => !achievement.claimed);
+
 
   return (
     <>
@@ -352,6 +362,7 @@ function AchievementList({
   walletConnected: boolean;
   onConnectWallet: () => void;
 }) {
+
   return (
     <>
       <div className="pageHeader">
@@ -383,6 +394,7 @@ function AchievementCard({
   walletConnected: boolean;
   onConnectWallet: () => void;
 }) {
+
   const canClaim = walletConnected && !achievement.claimed;
 
   return (
@@ -405,6 +417,7 @@ function AchievementCard({
           <dd>{achievement.score}</dd>
         </div>
       </dl>
+
       {achievement.claimed ? (
         <button className="secondaryButton cardButton">
           <CheckCircle2 size={18} />
@@ -430,6 +443,7 @@ function CertificateViewer({
 }: {
   achievements: Achievement[];
 }) {
+
   const claimed = achievements.filter((achievement) => achievement.claimed);
 
   return (
@@ -468,6 +482,7 @@ function VerificationPage({
   verifiedCode: string;
   onChangeCode: (value: string) => void;
 }) {
+
   const hasResult = verifiedCode.trim().length > 0;
 
   return (
@@ -500,6 +515,7 @@ function VerificationPage({
 }
 
 function AchievementRow({ achievement }: { achievement: Achievement }) {
+
   return (
     <div className="achievementRow">
       <div className="rowIcon">
@@ -515,6 +531,7 @@ function AchievementRow({ achievement }: { achievement: Achievement }) {
 }
 
 function Metric({ label, value }: { label: string; value: string }) {
+
   return (
     <div className="metric">
       <span>{label}</span>
