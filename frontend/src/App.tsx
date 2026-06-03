@@ -75,6 +75,7 @@ const navItems: Array<{ id: Page; label: string; icon: typeof LayoutDashboard }>
   ];
 
 
+  
 function App() {
   const [page, setPage] = useState<Page>("landing");
   const [walletConnected, setWalletConnected] = useState(false);
