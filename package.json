@@ -2,9 +2,13 @@
   "name": "student-achievement-wallet",
   "version": "0.1.0",
   "private": true,
+  "workspaces": [
+    "frontend"
+  ],
   "scripts": {
-    "dev": "echo \"Add your frontend/backend dev command here\"",
-    "lint": "echo \"Add linting once the app is scaffolded\"",
-    "test": "echo \"Add tests once the app is scaffolded\""
+    "dev": "npm run dev -w frontend",
+    "build": "npm run build -w frontend",
+    "lint": "npm run lint -w frontend",
+    "preview": "npm run preview -w frontend"
   }
 }

@@ -4,8 +4,8 @@ A blockchain-based platform for issuing, claiming, and verifying student achieve
 
 ## Tech Stack
 
-* Frontend: Next.js + TypeScript + Tailwind CSS
-* Backend: Node.js + Express
+* Frontend: React + Vite + TypeScript
+* Backend: Django REST Framework
 * Blockchain: Solidity
 * Wallet Integration: UGF
 
@@ -30,7 +30,7 @@ Install dependencies:
 npm install
 ```
 
-Run the project:
+Run the frontend:
 
 ```bash
 npm run dev
@@ -40,15 +40,15 @@ npm run dev
 
 * Student achievement dashboard
 * NFT certificates
-* NFT badges
+* Wallet connection UI
 * Achievement verification
 * Gasless transactions using UGF
 
 ## Project Structure
 
-frontend/ - User Interface
+frontend/ - React user interface
 
-backend/ - APIs and server
+backend/ - Django APIs and server
 
 contracts/ - Smart contracts
 
@@ -59,7 +59,9 @@ docs/ - Documentation
 Before starting work:
 
 ```bash
-git pull
+git checkout main
+git pull origin main
+git checkout -b feature/your-task-name
 ```
 
 After completing work:
@@ -67,5 +69,7 @@ After completing work:
 ```bash
 git add .
 git commit -m "Describe changes"
-git push
+git push -u origin feature/your-task-name
 ```
+
+Open a pull request into `main`. Do not commit directly to `main` during the hackathon.
