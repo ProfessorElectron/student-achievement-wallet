@@ -7,8 +7,8 @@ A student payment and achievement wallet for issuing, claiming, and verifying st
 * Frontend: React + Vite + TypeScript
 * Backend: Django REST Framework
 * Wallet: MetaMask + ethers.js
-* Blockchain: Solidity integration planned
-* Gas sponsorship: UGF integration planned
+* Blockchain: Solidity + Hardhat + OpenZeppelin
+* Gas sponsorship: UGF-ready authorized minter flow
 
 ## Features
 
@@ -18,6 +18,7 @@ A student payment and achievement wallet for issuing, claiming, and verifying st
 * Real wallet address, network, and ETH balance display
 * Achievement and certificate list from Django
 * Simulated NFT claim flow with token id and transaction hash
+* Optional real NFT minting through the AchievementCertificateNFT contract
 * Certificate PDF viewing
 * Certificate code copy button
 * Public certificate verification API
@@ -54,10 +55,17 @@ python manage.py seed_demo
 python manage.py runserver
 ```
 
+Optional backend email config:
+
+```bash
+copy backend\.env.example backend\.env
+```
+
 Run the frontend in another terminal:
 
 ```bash
 cd student-achievement-wallet
+copy frontend\.env.example frontend\.env
 npm run dev
 ```
 
@@ -93,7 +101,7 @@ Password: demo12345
 
 ## Current Claim Flow
 
-The current claim flow is backend-simulated:
+By default, the claim flow is backend-simulated so the demo stays stable:
 
 ```text
 Student clicks Claim NFT
@@ -103,15 +111,69 @@ Frontend updates the card
 Verifier can check certificate authenticity
 ```
 
+To enable real blockchain minting, deploy the contract, put the deployed address
+in `frontend/.env`, and set:
+
+```env
+VITE_ENABLE_REAL_MINT=true
+VITE_NFT_CONTRACT_ADDRESS=0xYourContractAddress
+```
+
+Then restart the frontend dev server.
+
+## Smart Contract Setup
+
+Install dependencies from the repo root:
+
+```bash
+npm install
+```
+
+Compile the NFT contract:
+
+```bash
+npm run contracts:compile
+```
+
+Deploy locally to Hardhat's default in-memory network:
+
+```bash
+npm run contracts:deploy:local
+```
+
+For Sepolia deployment:
+
+```bash
+copy .env.example .env
+```
+
+Fill in:
+
+```env
+SEPOLIA_RPC_URL=https://...
+DEPLOYER_PRIVATE_KEY=...
+```
+
+Then run:
+
+```bash
+npm run contracts:deploy:sepolia
+```
+
+The deploy script exports the contract ABI to:
+
+```text
+frontend/src/contracts/AchievementCertificateNFT.abi.json
+```
+
 ## Remaining Blockchain Work
 
-To turn the simulated claim into a real Web3 claim, the blockchain team needs to provide:
+For real Web3 minting, the blockchain team needs to provide:
 
 ```text
 Contract address
-Contract ABI
+Contract ABI, already exported by the deploy script
 Deployed network
-mintCertificate function parameters
 UGF gas sponsorship configuration
 ```
 
@@ -125,6 +187,30 @@ Token id and transaction hash return to frontend
 Django stores token id and transaction hash
 Verification checks database plus NFT ownership
 ```
+
+Important: `mintCertificate` is restricted to the contract owner or an authorized
+minter. For UGF sponsorship, authorize the UGF relayer/minter address with:
+
+```solidity
+setAuthorizedMinter(ugfRelayerAddress, true)
+```
+
+The backend is already ready to store a real mint result:
+
+```http
+POST /api/achievements/:id/record-mint/
+```
+
+Body:
+
+```json
+{
+  "token_id": "123",
+  "txHash": "0x..."
+}
+```
+
+See `contracts/README.md` for the blockchain teammate handoff checklist.
 
 ## Git Workflow
 

@@ -16,8 +16,9 @@ import {
   Wallet,
   X,
 } from "lucide-react";
-import { BrowserProvider, formatEther } from "ethers";
+import { BrowserProvider, Contract, Interface, formatEther } from "ethers";
 import { useEffect, useMemo, useState } from "react";
+import achievementCertificateAbi from "./contracts/AchievementCertificateNFT.abi.json";
 
 type Page =
   | "landing"
@@ -70,11 +71,22 @@ type EthereumProvider = {
   request: (request: { method: string; params?: unknown[] }) => Promise<unknown>;
 };
 
-const API_BASE_URL = "http://127.0.0.1:8000";
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") ?? "http://127.0.0.1:8000";
+const NFT_CONTRACT_ADDRESS = import.meta.env.VITE_NFT_CONTRACT_ADDRESS ?? "";
+const REAL_MINT_ENABLED = import.meta.env.VITE_ENABLE_REAL_MINT === "true";
 
 const getCertificateUrl = (path: string) => {
   if (!path) return "";
   return `${API_BASE_URL}${path}`;
+};
+
+const getMintMetadataUri = (achievement: Achievement) => {
+  if (achievement.certificate) return getCertificateUrl(achievement.certificate);
+  if (achievement.certificate_code) {
+    return `${API_BASE_URL}/api/verify/?q=${encodeURIComponent(achievement.certificate_code)}`;
+  }
+  return `${API_BASE_URL}/api/verify/?q=${achievement.id}`;
 };
 
 declare global {
@@ -297,10 +309,105 @@ useEffect(() => {
 
 const claimAchievement = async (achievementId: number) => {
   const token = localStorage.getItem("token");
+  const achievement = achievements.find((item) => item.id === achievementId);
 
   if (!token) {
     navigatePage("login");
     return;
+  }
+
+  if (!achievement) {
+    alert("Could not find this achievement in the dashboard.");
+    return;
+  }
+
+  if (REAL_MINT_ENABLED && NFT_CONTRACT_ADDRESS) {
+    if (!walletConnected || !walletAddress) {
+      alert("Connect MetaMask before claiming this NFT.");
+      return;
+    }
+
+    const ethereum = window.ethereum;
+
+    if (!ethereum) {
+      alert("MetaMask is required for real NFT minting.");
+      return;
+    }
+
+    try {
+      const provider = new BrowserProvider(ethereum);
+      const signer = await provider.getSigner();
+      const contract = new Contract(
+        NFT_CONTRACT_ADDRESS,
+        achievementCertificateAbi,
+        signer,
+      );
+      const certificateCode =
+        achievement.certificate_code ?? `SAW-${achievement.id}`;
+      const metadataURI = getMintMetadataUri(achievement);
+
+      const tx = await contract.mintCertificate(
+        walletAddress,
+        certificateCode,
+        metadataURI,
+      );
+      const receipt = await tx.wait();
+      const abiInterface = new Interface(achievementCertificateAbi);
+      let tokenId = "";
+
+      for (const log of receipt.logs) {
+        try {
+          const parsedLog = abiInterface.parseLog(log);
+
+          if (parsedLog?.name === "CertificateMinted") {
+            tokenId = parsedLog.args[1].toString();
+            break;
+          }
+        } catch {
+          // Ignore logs from other contracts in the same transaction.
+        }
+      }
+
+      const response = await fetch(
+        `${API_BASE_URL}/api/achievements/${achievementId}/record-mint/`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            token_id: tokenId || receipt.transactionHash,
+            txHash: receipt.transactionHash,
+          }),
+        }
+      );
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.error ?? "NFT minted, but the backend could not record it.");
+        return;
+      }
+
+      setAchievements((current) =>
+        current.map((item) =>
+          item.id === achievementId
+            ? {
+                ...item,
+                claimed: true,
+                token_id: data.achievement?.token_id ?? tokenId,
+                txHash: data.achievement?.tx_Hash ?? receipt.transactionHash,
+                tx_Hash: data.achievement?.tx_Hash ?? receipt.transactionHash,
+              }
+            : item
+        )
+      );
+      return;
+    } catch (error) {
+      console.error(error);
+      alert("Real NFT minting failed. Check the contract address, network, and minter permissions.");
+      return;
+    }
   }
 
   const response = await fetch(

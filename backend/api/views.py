@@ -161,6 +161,34 @@ def claim_certificate(request, pk):
     
     except Achievement.DoesNotExist:
         return Response({"error": "Not found"}, status=404)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def record_mint_result(request, pk):
+    token_id = request.data.get("token_id")
+    tx_hash = request.data.get("txHash") or request.data.get("tx_Hash")
+
+    if not token_id or not tx_hash:
+        return Response(
+            {"error": "token_id and txHash are required"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    try:
+        achievement = Achievement.objects.get(id=pk, student=request.user)
+    except Achievement.DoesNotExist:
+        return Response({"error": "Not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    achievement.claimed = True
+    achievement.token_id = str(token_id)
+    achievement.tx_Hash = str(tx_hash)
+    achievement.save()
+
+    return Response({
+        "message": "Mint result recorded",
+        "achievement": AchievementSerializer(achievement).data,
+    })
     
 
 

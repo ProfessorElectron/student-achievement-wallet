@@ -12,6 +12,10 @@ next-env.d.ts
 dist/
 build/
 
+# Hardhat
+artifacts/
+cache/
+
 # Testing and coverage
 coverage/
 .nyc_output/
