@@ -1,58 +1,130 @@
 # Student Achievement Wallet
 
-A blockchain-based platform for issuing, claiming, and verifying student achievements, certificates, and badges using NFTs with gasless transactions powered by UGF.
+A student payment and achievement wallet for issuing, claiming, and verifying student certificates as NFTs. The current demo includes a React frontend, Django REST backend, MetaMask wallet connection, certificate viewing, and backend-powered verification.
 
 ## Tech Stack
 
 * Frontend: React + Vite + TypeScript
 * Backend: Django REST Framework
-* Blockchain: Solidity
-* Wallet Integration: UGF
+* Wallet: MetaMask + ethers.js
+* Blockchain: Solidity integration planned
+* Gas sponsorship: UGF integration planned
 
-## Team Members
+## Features
 
-* Arka (Frontend / Project Lead)
-* [Teammate 1]
-* [Teammate 2]
+* Student login and signup
+* Achievement dashboard
+* MetaMask connection
+* Real wallet address, network, and ETH balance display
+* Achievement and certificate list from Django
+* Simulated NFT claim flow with token id and transaction hash
+* Certificate PDF viewing
+* Certificate code copy button
+* Public certificate verification API
+* Dark mode
+
+## Project Structure
+
+```text
+frontend/   React user interface
+backend/    Django REST API
+contracts/  Smart contracts
+docs/       Documentation
+```
 
 ## Setup
 
-Clone the repository:
+Clone and install frontend dependencies:
 
 ```bash
 git clone https://github.com/ProfessorElectron/student-achievement-wallet.git
 cd student-achievement-wallet
-```
-
-Install dependencies:
-
-```bash
 npm install
 ```
 
-Run the frontend:
+Set up the backend:
 
 ```bash
+cd backend
+python -m venv .venv
+.\.venv\Scripts\activate
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py seed_demo
+python manage.py runserver
+```
+
+Run the frontend in another terminal:
+
+```bash
+cd student-achievement-wallet
 npm run dev
 ```
 
-## Features
+Open the Vite URL, usually:
 
-* Student achievement dashboard
-* NFT certificates
-* Wallet connection UI
-* Achievement verification
-* Gasless transactions using UGF
+```text
+http://localhost:5173
+```
 
-## Project Structure
+## Demo Login
 
-frontend/ - React user interface
+```text
+Email: demo@student.local
+Password: demo12345
+```
 
-backend/ - Django APIs and server
+## 60-Second Demo Flow
 
-contracts/ - Smart contracts
+```text
+1. Login as Demo Student
+2. Open the dashboard
+3. Connect MetaMask
+4. Show wallet address, network, and ETH balance
+5. Open Achievements
+6. Click Claim NFT
+7. Open Certificates
+8. View the certificate PDF
+9. Copy the certificate code
+10. Open Verify
+11. Paste the certificate code
+12. Verify authenticity
+```
 
-docs/ - Documentation
+## Current Claim Flow
+
+The current claim flow is backend-simulated:
+
+```text
+Student clicks Claim NFT
+Django marks achievement as claimed
+Django creates token_id and txHash
+Frontend updates the card
+Verifier can check certificate authenticity
+```
+
+## Remaining Blockchain Work
+
+To turn the simulated claim into a real Web3 claim, the blockchain team needs to provide:
+
+```text
+Contract address
+Contract ABI
+Deployed network
+mintCertificate function parameters
+UGF gas sponsorship configuration
+```
+
+Then the claim flow should become:
+
+```text
+Student clicks Claim NFT
+UGF sponsors gas
+Smart contract mints NFT
+Token id and transaction hash return to frontend
+Django stores token id and transaction hash
+Verification checks database plus NFT ownership
+```
 
 ## Git Workflow
 

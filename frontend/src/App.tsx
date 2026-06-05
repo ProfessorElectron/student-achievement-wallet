@@ -131,6 +131,7 @@ function App() {
       total: achievements.length,
       claimed: achievements.filter((achievement) => achievement.claimed).length,
       pending: achievements.filter((achievement) => !achievement.claimed).length,
+      verifiedReady: achievements.filter((achievement) => achievement.certificate_code).length,
     }),
     [achievements]
   );
@@ -726,7 +727,7 @@ function Dashboard({
   wallet,
 }: {
   achievements: Achievement[];
-  stats: { total: number; claimed: number; pending: number };
+  stats: { total: number; claimed: number; pending: number; verifiedReady: number };
   walletConnected: boolean;
   walletAddress: string;
   walletMeta: WalletMeta;
@@ -750,12 +751,12 @@ function Dashboard({
         </button>
       </div>
       <div className="statsGrid">
-        <Metric label="Total achievements" value={String(stats.total)} />
-        <Metric label="NFT certificates" value={String(stats.claimed)} />
-        <Metric label="Ready to claim" value={String(stats.pending)} />
+        <Metric label="Achievements earned" value={String(stats.total)} />
+        <Metric label="NFTs claimed" value={String(stats.claimed)} />
+        <Metric label="Certificates verified" value={String(stats.verifiedReady)} />
         <Metric
-          label="MetaMask balance"
-          value={walletConnected ? walletMeta.ethBalance : "Connect wallet"}
+          label="Pending claims"
+          value={String(stats.pending)}
         />
       </div>
       <section className="walletSummary">
