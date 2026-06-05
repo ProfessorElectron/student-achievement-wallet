@@ -432,6 +432,26 @@ input {
   width: 100%;
 }
 
+.authMessage {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.authMessage.error {
+  color: #8a3d1f;
+  border: 1px solid rgba(206, 76, 36, 0.22);
+  background: #fff1e8;
+}
+
+.app[data-theme="dark"] .authMessage.error {
+  color: #ffb08d;
+  border-color: rgba(206, 76, 36, 0.34);
+  background: rgba(206, 76, 36, 0.14);
+}
+
 .workspace {
   display: grid;
   grid-template-columns: 260px minmax(0, 1fr);

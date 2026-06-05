@@ -468,8 +468,21 @@ function LoginPage({
 }) {
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
-  const handleLogin = async() =>{ 
-    const res = await fetch(`${API_BASE_URL}/api/login/`, {
+  const [loginError, setLoginError] = useState("");
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+
+  const handleLogin = async () => {
+    setLoginError("");
+
+    if (!email.trim() || !password.trim()) {
+      setLoginError("Enter both email and password.");
+      return;
+    }
+
+    setIsLoggingIn(true);
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/login/`, {
         method : "POST",
         headers: {
           "Content-Type" : "application/json",
@@ -478,21 +491,23 @@ function LoginPage({
           email,
           password, 
         }),
-    });
-    const data = await res.json();
-    if(data.access){
-      localStorage.setItem(
-        "token",
-        data.access
-      );
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data.access) {
+        setLoginError(data.error ?? "Login failed. Check your email and password.");
+        return;
+      }
+
+      localStorage.setItem("token", data.access);
       localStorage.setItem("user", JSON.stringify(data.user));
-      setTimeout(() =>{
       onLogin(data.user);
-    }, 0);
-    }else{
-      alert(data.error);
+    } catch {
+      setLoginError("Could not reach backend. Make sure Django is running on port 8000.");
+    } finally {
+      setIsLoggingIn(false);
     }
-    }
+  };
 
   return (
     <main className="loginPage">
@@ -512,9 +527,15 @@ function LoginPage({
           <input type="password" value={password} placeholder="Password" onChange={(e) => setPassword(e.target.value)} />
         </label>
 
-        <button className="primaryButton fullWidth" onClick={handleLogin}>
+        {loginError && <p className="authMessage error">{loginError}</p>}
+
+        <button
+          className="primaryButton fullWidth"
+          onClick={handleLogin}
+          disabled={isLoggingIn}
+        >
           <LogIn size={18} />
-          <span>Login</span>
+          <span>{isLoggingIn ? "Logging in..." : "Login"}</span>
         </button>
         <p>
           Don't have an account?
