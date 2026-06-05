@@ -782,6 +782,18 @@ dd {
   opacity: 1;
 }
 
+.verifyResult.failed {
+  color: #8a3d1f;
+  border-color: rgba(206, 76, 36, 0.22);
+  background: #fff1e8;
+}
+
+.app[data-theme="dark"] .verifyResult.failed {
+  color: #ffb08d;
+  border-color: rgba(206, 76, 36, 0.34);
+  background: rgba(206, 76, 36, 0.14);
+}
+
 .verifyResult span {
   display: block;
   margin-top: 4px;

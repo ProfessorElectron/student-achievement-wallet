@@ -58,6 +58,13 @@ type WalletMeta = {
   networkName: string;
   chainId: string;
 };
+type VerificationResult = {
+  verified: boolean;
+  message?: string;
+  student?: string;
+  wallet_address?: string;
+  achievement?: Achievement;
+};
 type EthereumProvider = {
   request: (request: { method: string; params?: unknown[] }) => Promise<unknown>;
 };
@@ -97,6 +104,9 @@ function App() {
   const [walletAddress, setWalletAddress] = useState("");
   const [walletConnected, setWalletConnected] = useState(false);
   const [verifiedCode, setVerifiedCode] = useState("");
+  const [verificationResult, setVerificationResult] =
+    useState<VerificationResult | null>(null);
+  const [isVerifying, setIsVerifying] = useState(false);
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [user, setUser] = useState<UserData | null>(() => {
     const saved = localStorage.getItem("user");
@@ -322,6 +332,35 @@ const claimAchievement = async (achievementId: number) => {
   );
 };
 
+const verifyCertificate = async () => {
+  const query = verifiedCode.trim();
+
+  if (!query) {
+    setVerificationResult({
+      verified: false,
+      message: "Enter a certificate code, wallet address, token id, or transaction hash.",
+    });
+    return;
+  }
+
+  setIsVerifying(true);
+
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/api/verify/?q=${encodeURIComponent(query)}`
+    );
+    const data = await response.json();
+    setVerificationResult(data);
+  } catch {
+    setVerificationResult({
+      verified: false,
+      message: "Could not reach the verification API.",
+    });
+  } finally {
+    setIsVerifying(false);
+  }
+};
+
 
 
   return (
@@ -380,6 +419,9 @@ const claimAchievement = async (achievementId: number) => {
               <VerificationPage
                 verifiedCode={verifiedCode}
                 onChangeCode={setVerifiedCode}
+                result={verificationResult}
+                isVerifying={isVerifying}
+                onVerify={verifyCertificate}
               />
             )}
           </section>
@@ -904,12 +946,16 @@ function CertificateViewer({
 function VerificationPage({
   verifiedCode,
   onChangeCode,
+  result,
+  isVerifying,
+  onVerify,
 }: {
   verifiedCode: string;
   onChangeCode: (value: string) => void;
+  result: VerificationResult | null;
+  isVerifying: boolean;
+  onVerify: () => void;
 }) {
-
-  const hasResult = verifiedCode.trim().length > 0;
 
   return (
     <>
@@ -924,17 +970,43 @@ function VerificationPage({
           Certificate ID or wallet address
           <input
             value={verifiedCode}
-            onChange={(event) => onChangeCode(event.target.value)}
+            onChange={(event) => {
+              onChangeCode(event.target.value);
+            }}
             placeholder="SAW-CERT-002 or 0x..."
           />
         </label>
-        <div className={hasResult ? "verifyResult visible" : "verifyResult"}>
-          <ShieldCheck size={32} />
-          <div>
-            <strong>Authentic certificate</strong>
-            <span>Owned by 0xA71C...92B4 and issued by UGF Campus Guild.</span>
+        <button className="primaryButton fullWidth" onClick={onVerify}>
+          <ShieldCheck size={18} />
+          <span>{isVerifying ? "Checking..." : "Verify Certificate"}</span>
+        </button>
+        {result && (
+          <div
+            className={
+              result.verified
+                ? "verifyResult visible"
+                : "verifyResult visible failed"
+            }
+          >
+            <ShieldCheck size={32} />
+            <div>
+              <strong>
+                {result.verified ? "Authentic certificate" : "No certificate found"}
+              </strong>
+              {result.verified && result.achievement ? (
+                <span>
+                  {result.achievement.title} issued by {result.achievement.issuer}
+                  {result.student ? ` to ${result.student}` : ""}.
+                  {result.wallet_address
+                    ? ` Wallet: ${shortAddress(result.wallet_address)}.`
+                    : ""}
+                </span>
+              ) : (
+                <span>{result.message ?? "Try another certificate code."}</span>
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </section>
     </>
   );

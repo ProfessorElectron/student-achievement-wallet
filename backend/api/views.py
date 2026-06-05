@@ -13,6 +13,7 @@ from .models import Wallet
 from rest_framework.permissions import IsAuthenticated, AllowAny
 import uuid
 from .models import StudentProfile
+from django.db.models import Q
 
 # Create your views here.
 @api_view(["POST"])
@@ -194,4 +195,42 @@ def wallet_info(request):
     return Response({
         "wallet_address": profile.wallet_address,
         "balance": float(wallet.balance),
+    })
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def verify_certificate(request):
+    query = request.query_params.get("q", "").strip()
+
+    if not query:
+        return Response(
+            {"verified": False, "error": "Enter a certificate code, wallet address, token id, or transaction hash."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    achievement = (
+        Achievement.objects.select_related("student", "student__studentprofile")
+        .filter(
+            Q(certificate_code__iexact=query)
+            | Q(token_id__iexact=query)
+            | Q(tx_Hash__iexact=query)
+            | Q(student__studentprofile__wallet_address__iexact=query)
+        )
+        .first()
+    )
+
+    if not achievement:
+        return Response({
+            "verified": False,
+            "message": "No matching certificate found.",
+        })
+
+    profile = getattr(achievement.student, "studentprofile", None)
+
+    return Response({
+        "verified": True,
+        "student": achievement.student.get_full_name() or achievement.student.username,
+        "wallet_address": profile.wallet_address if profile else "",
+        "achievement": AchievementSerializer(achievement).data,
     })
