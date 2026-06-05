@@ -19,6 +19,7 @@ coverage/
 # Environment variables
 .env
 .env*.local
+backend/.env
 
 # Logs
 npm-debug.log*
@@ -43,3 +44,13 @@ Thumbs.db
 
 # TypeScript
 *.tsbuildinfo
+
+# Python / Django
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.venv/
+venv/
+backend/db.sqlite3
+backend/backend/mail.env

@@ -20,13 +20,14 @@ import { useEffect, useMemo, useState } from "react";
 type Page =
   | "landing"
   | "login"
+  | "signup"
   | "dashboard"
   | "achievements"
   | "certificates"
   | "verify";
 
 type Achievement = {
-  id: string;
+  id: number;
   title: string;
   issuer: string;
   date: string;
@@ -34,41 +35,40 @@ type Achievement = {
   score: string;
   claimed: boolean;
   txHash?: string;
+  tx_Hash?: string;
+  token_id?: string | null;
+  certificate?: string;
+  certificate_code?: string;
 };
 
 type Theme = "light" | "dark";
+type UserData = {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+};
+type WalletState = {
+  balance: number;
+  wallet_address?: string;
+};
+type EthereumProvider = {
+  request: (request: { method: string; params?: unknown[] }) => Promise<string[]>;
+};
 
-const achievements: Achievement[] = [
-  {
-    id: "ach-001",
-    title: "Hackathon Winner",
-    issuer: "College Innovation Cell",
-    date: "2026-05-30",
-    category: "Innovation",
-    score: "1st Place",
-    claimed: false,
-  },
-  {
-    id: "ach-002",
-    title: "Smart Contract Bootcamp",
-    issuer: "UGF Campus Guild",
-    date: "2026-04-18",
-    category: "Blockchain",
-    score: "Completed",
-    claimed: true,
-    txHash: "0x9f42...81ac",
-  },
-  {
-    id: "ach-003",
-    title: "Dean's Merit Badge",
-    issuer: "Department of Physics",
-    date: "2026-03-12",
-    category: "Academic",
-    score: "Top 5%",
-    claimed: true,
-    txHash: "0x24ba...f03e",
-  },
-];
+const API_BASE_URL = "http://127.0.0.1:8000";
+
+const getCertificateUrl = (path: string) => {
+  if (!path) return "";
+  return `${API_BASE_URL}${path}`;
+};
+
+declare global {
+  interface Window {
+    ethereum?: EthereumProvider;
+  }
+}
+export {};
 
 const navItems: Array<{ id: Page; label: string; icon: typeof LayoutDashboard }> =
   [
@@ -82,8 +82,15 @@ const navItems: Array<{ id: Page; label: string; icon: typeof LayoutDashboard }>
   
 function App() {
   const [page, setPage] = useState<Page>("landing");
+  const [wallet, setWallet] = useState<WalletState>({ balance: 0 });
+  const [walletAddress, setWalletAddress] = useState("");
   const [walletConnected, setWalletConnected] = useState(false);
   const [verifiedCode, setVerifiedCode] = useState("");
+  const [achievements, setAchievements] = useState<Achievement[]>([]);
+  const [user, setUser] = useState<UserData | null>(() => {
+    const saved = localStorage.getItem("user");
+    return saved ? (JSON.parse(saved) as UserData) : null;
+  });
   const [theme, setTheme] = useState<Theme>(() => {
     const savedTheme = localStorage.getItem("student-wallet-theme");
 
@@ -95,7 +102,7 @@ function App() {
       ? "dark"
       : "light";
   });
-  const walletAddress = "0xA71C...92B4";
+  // const walletAddress = "0xA71C...92B4";
 
   const stats = useMemo(
     () => ({
@@ -103,14 +110,185 @@ function App() {
       claimed: achievements.filter((achievement) => achievement.claimed).length,
       pending: achievements.filter((achievement) => !achievement.claimed).length,
     }),
-    []
+    [achievements]
   );
 
-  const goToApp = () => setPage("dashboard");
+  const navigatePage = (newPage: Page) => {
+  window.history.pushState({ page: newPage }, "");
+  setPage(newPage);
+};
 
-  useEffect(() => {
+useEffect(() => {
     localStorage.setItem("student-wallet-theme", theme);
   }, [theme]);
+  useEffect(() => {
+  window.history.replaceState({ page: "landing" }, "");
+}, []);
+
+useEffect(() => {
+  const handlePopState = (event: PopStateEvent) => {
+    if (event.state?.page) {
+      setPage(event.state.page);
+    } else {
+      setPage("landing");
+    }
+  };
+
+  window.addEventListener("popstate", handlePopState);
+
+  return () => {
+    window.removeEventListener("popstate", handlePopState);
+  };
+}, []);
+
+useEffect(() => {
+  const token = localStorage.getItem("token");
+  if (!token) return;
+
+  fetch(`${API_BASE_URL}/api/achievements/`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      if (Array.isArray(data)) {
+        setAchievements(data);
+      } else {
+        setAchievements([]); // prevent crash
+      }
+    });
+}, [page]);
+
+useEffect(() => {
+  if (!walletConnected) return;
+  fetch(`${API_BASE_URL}/api/wallet/`, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`
+    }
+  })
+  .then(res => res.json())
+  .then((data) => {
+      console.log("wallet data:", data);
+      setWallet(data);
+    })
+    .catch((err) => console.error("wallet fetch error:", err));
+}, [walletConnected]);
+
+const connectWallet = async() =>{
+  try{
+    if(!window.ethereum){
+      alert("MetaMask is not installed");
+      return;
+    }
+    const accounts = await window.ethereum.request({
+      method: "eth_requestAccounts",
+    });
+
+
+    const address = accounts[0];
+    setWalletAddress(address);
+    setWalletConnected(true);
+
+     const token = localStorage.getItem("token");
+
+    await fetch(`${API_BASE_URL}/api/connect-wallet/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        wallet_address: address,
+      }),
+    });
+  }catch (error){
+    console.error(error);
+  }
+};
+
+const disconnectWallet = () => {
+  setWalletAddress("");
+  setWalletConnected(false);
+}
+const handleWalletToggle = () =>{
+  if(walletConnected){
+    disconnectWallet();
+  }else{
+    connectWallet();
+  }
+};
+
+useEffect(() => {
+  const fetchWallet = async () => {
+
+    const token = localStorage.getItem("token");
+
+    if (!token) return;
+
+    const res = await fetch(
+      `${API_BASE_URL}/api/wallet/`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    const data = await res.json();
+
+    if (data.wallet_address) {
+      setWalletAddress(data.wallet_address);
+      setWalletConnected(true);
+    }
+    if (typeof data.balance === "number") {
+      setWallet((current) => ({ ...current, balance: data.balance }));
+    }
+  };
+
+  fetchWallet();
+}, []);
+
+const claimAchievement = async (achievementId: number) => {
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    navigatePage("login");
+    return;
+  }
+
+  const response = await fetch(
+    `${API_BASE_URL}/api/achievements/${achievementId}/claim/`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  const data = await response.json();
+
+  if (!response.ok) {
+    alert(data.error ?? "Could not claim this certificate");
+    return;
+  }
+
+  setAchievements((current) =>
+    current.map((achievement) =>
+      achievement.id === achievementId
+        ? {
+            ...achievement,
+            claimed: true,
+            token_id: data.token_id,
+            txHash: data.txHash ?? data.tx_Hash,
+            tx_Hash: data.tx_Hash ?? data.txHash,
+          }
+        : achievement
+    )
+  );
+};
+
+
 
   return (
     <div className="app" data-theme={theme}>
@@ -118,36 +296,45 @@ function App() {
         currentPage={page}
         theme={theme}
         walletAddress={walletConnected ? walletAddress : undefined}
-        onNavigate={setPage}
+        onNavigate={navigatePage}
         onThemeToggle={() =>
           setTheme((current) => (current === "dark" ? "light" : "dark"))
         }
-        onWalletToggle={() => setWalletConnected((current) => !current)}
+        // onWalletToggle={() => setWalletConnected((current) => !current)}
+        onWalletToggle={handleWalletToggle}
       />
 
       {page === "landing" ? (
-        <LandingPage onStart={() => setPage("login")} onDemo={goToApp} />
+        <LandingPage onStart={() => navigatePage("login")} onDemo={() => navigatePage("dashboard")} />
       ) : page === "login" ? (
-        <LoginPage onLogin={goToApp} />
-      ) : (
+        <LoginPage onLogin={(userData)=>{setUser(userData); navigatePage("dashboard");}} onSignupClick={() => navigatePage("signup")} />
+      ):page === "signup" ? (
+        <SignupPage onLoginClick = {() => 
+          navigatePage("login")
+        }/>
+      ): (
         <main className="workspace">
-          <Sidebar currentPage={page} onNavigate={setPage} />
+          <Sidebar currentPage={page} onNavigate={navigatePage} user={user}/>
 
           <section className="content">
             {page === "dashboard" && (
               <Dashboard
                 achievements={achievements}
                 stats={stats}
+                wallet={wallet}
                 walletConnected={walletConnected}
-                onClaim={() => setPage("achievements")}
-                onVerify={() => setPage("verify")}
+                onClaim={() => navigatePage("achievements")}
+                onVerify={() => navigatePage("verify")}
               />
             )}
             {page === "achievements" && (
               <AchievementList
                 achievements={achievements}
                 walletConnected={walletConnected}
-                onConnectWallet={() => setWalletConnected(true)}
+                walletAddress={walletAddress}
+                // onConnectWallet={() => setWalletConnected(true)}
+                onConnectWallet={connectWallet}
+                onClaimAchievement={claimAchievement}
               />
             )}
             {page === "certificates" && (
@@ -181,7 +368,10 @@ function Navbar({
   onThemeToggle: () => void;
   onWalletToggle: () => void;
 }) {
-  const showWallet = currentPage !== "landing" && currentPage !== "login";
+  const showWallet =
+    currentPage !== "landing" &&
+    currentPage !== "login" &&
+    currentPage !== "signup";
 
   return (
     <header className="navbar">
@@ -269,7 +459,40 @@ function LandingPage({
   );
 }
 
-function LoginPage({ onLogin }: { onLogin: () => void }) {
+function LoginPage({
+  onLogin,
+  onSignupClick,
+}: {
+  onLogin: (userData: UserData) => void;
+  onSignupClick: () => void;
+}) {
+  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("");
+  const handleLogin = async() =>{ 
+    const res = await fetch(`${API_BASE_URL}/api/login/`, {
+        method : "POST",
+        headers: {
+          "Content-Type" : "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password, 
+        }),
+    });
+    const data = await res.json();
+    if(data.access){
+      localStorage.setItem(
+        "token",
+        data.access
+      );
+      localStorage.setItem("user", JSON.stringify(data.user));
+      setTimeout(() =>{
+      onLogin(data.user);
+    }, 0);
+    }else{
+      alert(data.error);
+    }
+    }
 
   return (
     <main className="loginPage">
@@ -281,38 +504,96 @@ function LoginPage({ onLogin }: { onLogin: () => void }) {
 
         <label>
           Student ID
-          <input type="text" value="SAW-2026-014" readOnly />
+          <input type="email" value={email} placeholder="Email" onChange={(e) => setEmail(e.target.value)}/>
         </label>
 
         <label>
           Password
-          <input type="password" value="demopass" readOnly />
+          <input type="password" value={password} placeholder="Password" onChange={(e) => setPassword(e.target.value)} />
         </label>
 
-        <button className="primaryButton fullWidth" onClick={onLogin}>
+        <button className="primaryButton fullWidth" onClick={handleLogin}>
           <LogIn size={18} />
           <span>Login</span>
+        </button>
+        <p>
+          Don't have an account?
+        </p>
+        <button className = "secondaryButton" onClick = {onSignupClick}>
+          Sign Up
         </button>
       </section>
     </main>
   );
 }
 
+
+function SignupPage({
+  onLoginClick,
+} : {
+  onLoginClick: () => void;
+}){
+  const [name,  setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  
+  const handleSignUp = async() => {
+    const res = await fetch(
+      `${API_BASE_URL}/api/signup/`,
+      {
+        method : "POST",
+        headers : {
+          "Content-Type" : "application/json",
+        },
+        body: JSON.stringify({
+          name, 
+          email,
+          password,
+        }),
+      }
+    );
+    const data = await res.json();
+    if(res.ok){
+      alert(data.message)
+    }else{
+      alert(data.error)
+    }
+  };
+  return (
+    <main className="loginPage">
+      <section className="loginPanel">
+        <h1>Create Account</h1>
+        <input type="text" placeholder="Full Name" value={name} onChange={(e) => setName(e.target.value)}/>
+        <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)}/>
+        <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)}/>
+        <button className="primaryButton fullWidth" onClick={handleSignUp}>
+          SignUp
+        </button>
+        <button className="secondaryButton" onClick={onLoginClick}>
+          Back to Login
+        </button>
+      </section>
+    </main>
+  )
+}
+
 function Sidebar({
   currentPage,
   onNavigate,
+  user,
 }: {
   currentPage: Page;
   onNavigate: (page: Page) => void;
+  user: UserData | null;
 }) {
 
   return (
     <aside className="sidebar">
       <div className="profileSection">
-        <div className="avatar">AS</div>
+        <div className="avatar">{user?.name? user.name.split(" ").map((n: string) => n[0]).join("").toUpperCase(): "S"}</div>
         <div>
-          <strong>Johnny Cage</strong>
-          <span>Physics Student</span>
+          <strong>{user?.name?? "Guest User"}</strong>
+          <span>{user?.role?? "Student"}</span>
         </div>
       </div>
       <nav className="sideNav">
@@ -340,12 +621,14 @@ function Dashboard({
   walletConnected,
   onClaim,
   onVerify,
+  wallet,
 }: {
   achievements: Achievement[];
   stats: { total: number; claimed: number; pending: number };
   walletConnected: boolean;
   onClaim: () => void;
   onVerify: () => void;
+  wallet: {balance: number};
 }) {
   const nextClaim = achievements.find((achievement) => !achievement.claimed);
 
@@ -366,6 +649,7 @@ function Dashboard({
         <Metric label="Total achievements" value={String(stats.total)} />
         <Metric label="NFT certificates" value={String(stats.claimed)} />
         <Metric label="Ready to claim" value={String(stats.pending)} />
+        <Metric label="Wallet Balance" value={String(wallet.balance)} />
       </div>
       <section className="claimPanel">
         <div>
@@ -394,11 +678,15 @@ function Dashboard({
 function AchievementList({
   achievements,
   walletConnected,
+  walletAddress,
   onConnectWallet,
+  onClaimAchievement,
 }: {
   achievements: Achievement[];
   walletConnected: boolean;
+  walletAddress: string;
   onConnectWallet: () => void;
+  onClaimAchievement: (achievementId: number) => void;
 }) {
 
   return (
@@ -416,6 +704,8 @@ function AchievementList({
             achievement={achievement}
             walletConnected={walletConnected}
             onConnectWallet={onConnectWallet}
+            walletAddress={walletAddress}
+            onClaimAchievement={onClaimAchievement}
           />
         ))}
       </div>
@@ -426,11 +716,15 @@ function AchievementList({
 function AchievementCard({
   achievement,
   walletConnected,
+  walletAddress,
   onConnectWallet,
+  onClaimAchievement,
 }: {
   achievement: Achievement;
   walletConnected: boolean;
+  walletAddress: string;
   onConnectWallet: () => void;
+  onClaimAchievement: (achievementId: number) => void;
 }) {
 
   const canClaim = walletConnected && !achievement.claimed;
@@ -459,17 +753,20 @@ function AchievementCard({
       {achievement.claimed ? (
         <button className="secondaryButton cardButton">
           <CheckCircle2 size={18} />
-          <span>{achievement.txHash}</span>
+          <span>{achievement.txHash ?? achievement.tx_Hash ?? "Claimed"}</span>
         </button>
       ) : canClaim ? (
-        <button className="primaryButton cardButton">
+        <button
+          className="primaryButton cardButton"
+          onClick={() => onClaimAchievement(achievement.id)}
+        >
           <Sparkles size={18} />
           <span>Claim NFT</span>
         </button>
       ) : (
         <button className="secondaryButton cardButton" onClick={onConnectWallet}>
           <Wallet size={18} />
-          <span>Connect Wallet</span>
+          <span>{walletConnected? `${walletAddress.slice(0,6)}...${walletAddress.slice(-4)}`: "Connect Wallet"}</span>
         </button>
       )}
     </article>
@@ -482,7 +779,7 @@ function CertificateViewer({
   achievements: Achievement[];
 }) {
 
-  const claimed = achievements.filter((achievement) => achievement.claimed);
+  const claimed = achievements;
 
   return (
     <>
@@ -502,9 +799,14 @@ function CertificateViewer({
             <p className="certLabel">Certificate</p>
             <h2>{achievement.title}</h2>
             <p>{achievement.issuer}</p>
+            {achievement.certificate && (
+              <button onClick={() => window.open(getCertificateUrl(achievement.certificate?? ""), "_blank")}>
+                View Certificate
+                </button>
+            )}
             <div className="certificateFooter">
               <span>{achievement.date}</span>
-              <span>{achievement.txHash}</span>
+              <span>{achievement.txHash ?? achievement.tx_Hash}</span>
             </div>
           </article>
         ))}
