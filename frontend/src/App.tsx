@@ -15,6 +15,7 @@ import {
   Wallet,
   X,
 } from "lucide-react";
+import { BrowserProvider, formatEther } from "ethers";
 import { useEffect, useMemo, useState } from "react";
 
 type Page =
@@ -52,8 +53,13 @@ type WalletState = {
   balance: number;
   wallet_address?: string;
 };
+type WalletMeta = {
+  ethBalance: string;
+  networkName: string;
+  chainId: string;
+};
 type EthereumProvider = {
-  request: (request: { method: string; params?: unknown[] }) => Promise<string[]>;
+  request: (request: { method: string; params?: unknown[] }) => Promise<unknown>;
 };
 
 const API_BASE_URL = "http://127.0.0.1:8000";
@@ -83,6 +89,11 @@ const navItems: Array<{ id: Page; label: string; icon: typeof LayoutDashboard }>
 function App() {
   const [page, setPage] = useState<Page>("landing");
   const [wallet, setWallet] = useState<WalletState>({ balance: 0 });
+  const [walletMeta, setWalletMeta] = useState<WalletMeta>({
+    ethBalance: "Not connected",
+    networkName: "Not connected",
+    chainId: "",
+  });
   const [walletAddress, setWalletAddress] = useState("");
   const [walletConnected, setWalletConnected] = useState(false);
   const [verifiedCode, setVerifiedCode] = useState("");
@@ -175,6 +186,22 @@ useEffect(() => {
     .catch((err) => console.error("wallet fetch error:", err));
 }, [walletConnected]);
 
+async function refreshWalletMeta(address: string) {
+  if (!window.ethereum || !address) return;
+
+  const provider = new BrowserProvider(window.ethereum);
+  const [balance, network] = await Promise.all([
+    provider.getBalance(address),
+    provider.getNetwork(),
+  ]);
+
+  setWalletMeta({
+    ethBalance: `${Number(formatEther(balance)).toFixed(4)} ETH`,
+    networkName: network.name === "unknown" ? `Chain ${network.chainId}` : network.name,
+    chainId: network.chainId.toString(),
+  });
+}
+
 const connectWallet = async() =>{
   try{
     if(!window.ethereum){
@@ -183,12 +210,13 @@ const connectWallet = async() =>{
     }
     const accounts = await window.ethereum.request({
       method: "eth_requestAccounts",
-    });
+    }) as string[];
 
 
     const address = accounts[0];
     setWalletAddress(address);
     setWalletConnected(true);
+    await refreshWalletMeta(address);
 
      const token = localStorage.getItem("token");
 
@@ -210,6 +238,11 @@ const connectWallet = async() =>{
 const disconnectWallet = () => {
   setWalletAddress("");
   setWalletConnected(false);
+  setWalletMeta({
+    ethBalance: "Not connected",
+    networkName: "Not connected",
+    chainId: "",
+  });
 }
 const handleWalletToggle = () =>{
   if(walletConnected){
@@ -240,6 +273,7 @@ useEffect(() => {
     if (data.wallet_address) {
       setWalletAddress(data.wallet_address);
       setWalletConnected(true);
+      void refreshWalletMeta(data.wallet_address);
     }
     if (typeof data.balance === "number") {
       setWallet((current) => ({ ...current, balance: data.balance }));
@@ -322,6 +356,8 @@ const claimAchievement = async (achievementId: number) => {
                 achievements={achievements}
                 stats={stats}
                 wallet={wallet}
+                walletAddress={walletAddress}
+                walletMeta={walletMeta}
                 walletConnected={walletConnected}
                 onClaim={() => navigatePage("achievements")}
                 onVerify={() => navigatePage("verify")}
@@ -640,6 +676,8 @@ function Dashboard({
   achievements,
   stats,
   walletConnected,
+  walletAddress,
+  walletMeta,
   onClaim,
   onVerify,
   wallet,
@@ -647,6 +685,8 @@ function Dashboard({
   achievements: Achievement[];
   stats: { total: number; claimed: number; pending: number };
   walletConnected: boolean;
+  walletAddress: string;
+  walletMeta: WalletMeta;
   onClaim: () => void;
   onVerify: () => void;
   wallet: {balance: number};
@@ -670,8 +710,28 @@ function Dashboard({
         <Metric label="Total achievements" value={String(stats.total)} />
         <Metric label="NFT certificates" value={String(stats.claimed)} />
         <Metric label="Ready to claim" value={String(stats.pending)} />
-        <Metric label="Wallet Balance" value={String(wallet.balance)} />
+        <Metric
+          label="MetaMask balance"
+          value={walletConnected ? walletMeta.ethBalance : "Connect wallet"}
+        />
       </div>
+      <section className="walletSummary">
+        <div>
+          <span className="eyebrow">Connected wallet</span>
+          <h2>{walletConnected ? shortAddress(walletAddress) : "No wallet connected"}</h2>
+        </div>
+        <div className="walletFacts">
+          <Metric
+            label="Network"
+            value={walletConnected ? walletMeta.networkName : "Not connected"}
+          />
+          <Metric
+            label="ETH balance"
+            value={walletConnected ? walletMeta.ethBalance : "Not connected"}
+          />
+          <Metric label="Backend balance" value={String(wallet.balance)} />
+        </div>
+      </section>
       <section className="claimPanel">
         <div>
           <span className="eyebrow">Next claim</span>
@@ -694,6 +754,11 @@ function Dashboard({
       </section>
     </>
   );
+}
+
+function shortAddress(address: string) {
+  if (!address) return "";
+  return `${address.slice(0, 6)}...${address.slice(-4)}`;
 }
 
 function AchievementList({
