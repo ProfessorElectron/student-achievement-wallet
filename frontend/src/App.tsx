@@ -4,6 +4,7 @@ import {
   BookOpen,
   CheckCircle2,
   ChevronRight,
+  Copy,
   GraduationCap,
   LayoutDashboard,
   LogIn,
@@ -908,6 +909,25 @@ function CertificateViewer({
 }) {
 
   const claimed = achievements;
+  const [copiedCode, setCopiedCode] = useState("");
+
+  const copyCertificateCode = async (code: string) => {
+    if (!code) return;
+
+    try {
+      await navigator.clipboard.writeText(code);
+    } catch {
+      const textArea = document.createElement("textarea");
+      textArea.value = code;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textArea);
+    }
+
+    setCopiedCode(code);
+    window.setTimeout(() => setCopiedCode(""), 1800);
+  };
 
   return (
     <>
@@ -927,6 +947,21 @@ function CertificateViewer({
             <p className="certLabel">Certificate</p>
             <h2>{achievement.title}</h2>
             <p>{achievement.issuer}</p>
+            {achievement.certificate_code && (
+              <div className="certificateCode">
+                <span>{achievement.certificate_code}</span>
+                <button
+                  className="copyButton"
+                  onClick={() => copyCertificateCode(achievement.certificate_code ?? "")}
+                  title="Copy certificate code"
+                >
+                  <Copy size={16} />
+                  <span>
+                    {copiedCode === achievement.certificate_code ? "Copied" : "Copy"}
+                  </span>
+                </button>
+              </div>
+            )}
             {achievement.certificate && (
               <button onClick={() => window.open(getCertificateUrl(achievement.certificate?? ""), "_blank")}>
                 View Certificate

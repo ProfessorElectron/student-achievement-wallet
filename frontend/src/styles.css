@@ -752,6 +752,55 @@ dd {
   color: #4b5563;
 }
 
+.certificateCode {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid rgba(63, 95, 181, 0.16);
+  border-radius: 8px;
+  background: rgba(63, 95, 181, 0.06);
+}
+
+.certificateCode > span {
+  overflow: hidden;
+  color: #172033;
+  font-size: 0.88rem;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.copyButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid rgba(23, 32, 51, 0.12);
+  border-radius: 8px;
+  color: #172033;
+  background: #ffffff;
+  font-weight: 900;
+}
+
+.app[data-theme="dark"] .certificateCode {
+  border-color: rgba(158, 178, 255, 0.18);
+  background: rgba(94, 126, 231, 0.1);
+}
+
+.app[data-theme="dark"] .certificateCode > span {
+  color: #f8fafc;
+}
+
+.app[data-theme="dark"] .copyButton {
+  color: #e5edf6;
+  border-color: rgba(226, 232, 240, 0.14);
+  background: rgba(15, 23, 42, 0.92);
+}
+
 .verifyPanel {
   display: grid;
   gap: 20px;
