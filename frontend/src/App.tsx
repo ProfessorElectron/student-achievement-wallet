@@ -1021,7 +1021,7 @@ function CertificateViewer({
   achievements: Achievement[];
 }) {
 
-  const claimed = achievements;
+  const claimed = achievements.filter((achievement) => achievement.claimed);
   const [copiedCode, setCopiedCode] = useState("");
 
   const copyCertificateCode = async (code: string) => {
@@ -1050,6 +1050,13 @@ function CertificateViewer({
           <h1>NFT certificate viewer</h1>
         </div>
       </div>
+      {claimed.length === 0 && (
+        <section className="emptyState">
+          <BadgeCheck size={32} />
+          <h2>No claimed certificates yet</h2>
+          <p>Claim an achievement NFT first, then it will appear here as an on-chain certificate.</p>
+        </section>
+      )}
       <div className="certificateGrid">
         {claimed.map((achievement) => (
           <article className="certificateCard" key={achievement.id}>
