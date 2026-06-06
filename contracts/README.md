@@ -12,6 +12,11 @@ The contract uses OpenZeppelin ERC721URIStorage and mints one NFT certificate pe
 certificate code. Minting is restricted to the contract owner or an authorized
 minter, which is the hook you need for a UGF relayer/gas sponsor.
 
+For the immediate MetaMask demo, the frontend calls `mintOwnCertificate`, which
+mints the certificate to the connected student wallet. For the UGF flow, use
+`mintCertificate(student, certificateCode, metadataURI)` from an authorized
+relayer/minter.
+
 ## Commands
 
 From the repo root:
@@ -98,6 +103,11 @@ Keep the first version simple:
 ```solidity
 function mintCertificate(
     address student,
+    string memory certificateCode,
+    string memory metadataURI
+) external returns (uint256 tokenId);
+
+function mintOwnCertificate(
     string memory certificateCode,
     string memory metadataURI
 ) external returns (uint256 tokenId);

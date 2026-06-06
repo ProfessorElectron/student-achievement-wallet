@@ -37,6 +37,21 @@ contract AchievementCertificateNFT is ERC721URIStorage, Ownable {
         string memory certificateCode,
         string memory metadataURI
     ) external onlyAuthorizedMinter returns (uint256 tokenId) {
+        return _mintCertificate(student, certificateCode, metadataURI);
+    }
+
+    function mintOwnCertificate(
+        string memory certificateCode,
+        string memory metadataURI
+    ) external returns (uint256 tokenId) {
+        return _mintCertificate(msg.sender, certificateCode, metadataURI);
+    }
+
+    function _mintCertificate(
+        address student,
+        string memory certificateCode,
+        string memory metadataURI
+    ) private returns (uint256 tokenId) {
         require(student != address(0), "Invalid student");
         require(bytes(certificateCode).length > 0, "Certificate code required");
         require(!certificateCodeUsed[certificateCode], "Certificate already minted");

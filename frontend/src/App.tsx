@@ -346,11 +346,7 @@ const claimAchievement = async (achievementId: number) => {
         achievement.certificate_code ?? `SAW-${achievement.id}`;
       const metadataURI = getMintMetadataUri(achievement);
 
-      const tx = await contract.mintCertificate(
-        walletAddress,
-        certificateCode,
-        metadataURI,
-      );
+      const tx = await contract.mintOwnCertificate(certificateCode, metadataURI);
       const receipt = await tx.wait();
       const abiInterface = new Interface(achievementCertificateAbi);
       let tokenId = "";

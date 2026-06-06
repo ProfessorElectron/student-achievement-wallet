@@ -188,8 +188,12 @@ Django stores token id and transaction hash
 Verification checks database plus NFT ownership
 ```
 
-Important: `mintCertificate` is restricted to the contract owner or an authorized
-minter. For UGF sponsorship, authorize the UGF relayer/minter address with:
+For the immediate MetaMask demo, the frontend calls `mintOwnCertificate`, so the
+connected student wallet can approve the transaction and receive the NFT.
+
+Important: `mintCertificate` is still restricted to the contract owner or an
+authorized minter. For UGF sponsorship, authorize the UGF relayer/minter address
+with:
 
 ```solidity
 setAuthorizedMinter(ugfRelayerAddress, true)
