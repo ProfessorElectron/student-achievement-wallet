@@ -701,7 +701,7 @@ function LoginPage({
       localStorage.setItem("user", JSON.stringify(data.user));
       onLogin(data.user);
     } catch {
-      setLoginError("Could not reach backend. Make sure Django is running on port 8000.");
+      setLoginError("Could not reach backend. Check VITE_API_BASE_URL or make sure Django is running locally.");
     } finally {
       setIsLoggingIn(false);
     }

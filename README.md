@@ -75,6 +75,22 @@ Open the Vite URL, usually:
 http://localhost:5173
 ```
 
+## Vercel Frontend Environment
+
+Vercel cannot read your local `frontend/.env`, so add these in the Vercel
+project settings before deploying:
+
+```env
+VITE_ENABLE_REAL_MINT=true
+VITE_NFT_CONTRACT_ADDRESS=0x087dcAC90da98fBf897ff1db7B335f51BD8366Fd
+VITE_API_BASE_URL=https://your-deployed-django-backend.example.com
+```
+
+If `VITE_API_BASE_URL` is missing, the frontend falls back to
+`http://127.0.0.1:8000`, which only works on your laptop. The deployed Vercel
+site needs a deployed Django backend URL for login, achievements, certificates,
+and verification API calls.
+
 ## Demo Login
 
 ```text
