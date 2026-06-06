@@ -357,6 +357,12 @@ const claimAchievement = async (achievementId: number) => {
 
       const tx = await contract.mintOwnCertificate(certificateCode, metadataURI);
       const receipt = await tx.wait();
+      const transactionHash = receipt?.hash ?? tx.hash;
+
+      if (!receipt || !transactionHash) {
+        throw new Error("Transaction was sent, but the wallet did not return a receipt hash.");
+      }
+
       const abiInterface = new Interface(achievementCertificateAbi);
       let tokenId = "";
 
@@ -382,8 +388,8 @@ const claimAchievement = async (achievementId: number) => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            token_id: tokenId || receipt.transactionHash,
-            txHash: receipt.transactionHash,
+            token_id: tokenId || transactionHash,
+            txHash: transactionHash,
           }),
         }
       );
@@ -401,8 +407,8 @@ const claimAchievement = async (achievementId: number) => {
                 ...item,
                 claimed: true,
                 token_id: data.achievement?.token_id ?? tokenId,
-                txHash: data.achievement?.tx_Hash ?? receipt.transactionHash,
-                tx_Hash: data.achievement?.tx_Hash ?? receipt.transactionHash,
+                txHash: data.achievement?.tx_Hash ?? transactionHash,
+                tx_Hash: data.achievement?.tx_Hash ?? transactionHash,
               }
             : item
         )
