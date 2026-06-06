@@ -36,23 +36,60 @@ class Command(BaseCommand):
         )
         Wallet.objects.get_or_create(user=user, defaults={"balance": 0})
 
-        achievement, _ = Achievement.objects.get_or_create(
-            student=user,
-            title="Hackathon Winner",
-            defaults={
+        demo_achievements = [
+            {
+                "title": "Hackathon Winner",
                 "issuer": "Demo College Innovation Cell",
                 "category": "Innovation",
                 "date": date(2026, 6, 5),
                 "certificate": "certificates/SHWETARKA_BANERJEE_Certificate.pdf",
-                "claimed": False,
             },
-        )
+            {
+                "title": "NFT Design & Metadata Standards",
+                "issuer": "Web3 Academy",
+                "category": "NFT",
+                "date": date(2024, 6, 10),
+                "certificate": "certificates/web3_academy_nft_metadata.png",
+            },
+            {
+                "title": "Blockchain & Smart Contracts 101",
+                "issuer": "Cryptoverse",
+                "category": "Blockchain",
+                "date": date(2024, 4, 28),
+                "certificate": "certificates/cryptoverse_blockchain_smart_contracts.png",
+            },
+            {
+                "title": "Decentralized Finance Essentials",
+                "issuer": "Demo College Finance Lab",
+                "category": "DeFi",
+                "date": date(2024, 3, 15),
+                "certificate": "certificates/defi_essentials_completion.png",
+            },
+            {
+                "title": "Web3 Development Fundamentals",
+                "issuer": "Nexora",
+                "category": "Web3",
+                "date": date(2024, 5, 20),
+                "certificate": "certificates/nexora_web3_development.png",
+            },
+        ]
 
-        if not achievement.certificate:
-            achievement.certificate = "certificates/SHWETARKA_BANERJEE_Certificate.pdf"
+        achievements = []
+        for demo in demo_achievements:
+            achievement, _ = Achievement.objects.get_or_create(
+                student=user,
+                title=demo["title"],
+                defaults={**demo, "claimed": False},
+            )
+            for field, value in demo.items():
+                setattr(achievement, field, value)
             achievement.save()
+            achievements.append(achievement)
 
         self.stdout.write(self.style.SUCCESS("Demo account ready"))
         self.stdout.write("Email: demo@student.local")
         self.stdout.write("Password: demo12345")
-        self.stdout.write(f"Certificate code: {achievement.certificate_code}")
+        for achievement in achievements:
+            self.stdout.write(
+                f"{achievement.title}: {achievement.certificate_code}"
+            )
