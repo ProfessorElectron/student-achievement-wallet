@@ -89,6 +89,15 @@ const getMintMetadataUri = (achievement: Achievement) => {
   return `${API_BASE_URL}/api/verify/?q=${achievement.id}`;
 };
 
+const getErrorMessage = (error: unknown) => {
+  if (error instanceof Error) return error.message;
+  if (typeof error === "object" && error !== null) {
+    const candidate = error as { reason?: string; shortMessage?: string; message?: string };
+    return candidate.reason ?? candidate.shortMessage ?? candidate.message ?? "Unknown error";
+  }
+  return String(error);
+};
+
 declare global {
   interface Window {
     ethereum?: EthereumProvider;
@@ -401,7 +410,7 @@ const claimAchievement = async (achievementId: number) => {
       return;
     } catch (error) {
       console.error(error);
-      alert("Real NFT minting failed. Check the contract address, network, and minter permissions.");
+      alert(`Real NFT minting failed: ${getErrorMessage(error)}`);
       return;
     }
   }
