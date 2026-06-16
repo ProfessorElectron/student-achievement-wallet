@@ -2,7 +2,7 @@
 
 A student payment and achievement wallet for issuing, claiming, and verifying student certificates as NFTs. The current demo includes a React frontend, Django REST backend, MetaMask wallet connection, certificate viewing, and backend-powered verification.
 
-## Tech Stack
+### Tech Stack
 
 * Frontend: React + Vite + TypeScript
 * Backend: Django REST Framework
