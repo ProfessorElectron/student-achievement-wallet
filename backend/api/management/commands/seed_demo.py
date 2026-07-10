@@ -43,6 +43,10 @@ class Command(BaseCommand):
                 "category": "Innovation",
                 "date": date(2026, 6, 5),
                 "certificate": "certificates/SHWETARKA_BANERJEE_Certificate.pdf",
+                "certificate_code": "SAW-FA46D3A67E",
+                "claimed": True,
+                "token_id": "1",
+                "tx_Hash": "0x11932f7db823fb0f67c06b2aa9876bfc96867da0b30fb9817ac6331c9767cc57",
             },
             {
                 "title": "NFT Design & Metadata Standards",
@@ -50,6 +54,10 @@ class Command(BaseCommand):
                 "category": "NFT",
                 "date": date(2024, 6, 10),
                 "certificate": "certificates/web3_academy_nft_metadata.png",
+                "certificate_code": "SAW-6C7ACCAF1F",
+                "claimed": False,
+                "token_id": None,
+                "tx_Hash": None,
             },
             {
                 "title": "Blockchain & Smart Contracts 101",
@@ -57,6 +65,10 @@ class Command(BaseCommand):
                 "category": "Blockchain",
                 "date": date(2024, 4, 28),
                 "certificate": "certificates/cryptoverse_blockchain_smart_contracts.png",
+                "certificate_code": "SAW-2C7B1FC35C",
+                "claimed": False,
+                "token_id": None,
+                "tx_Hash": None,
             },
             {
                 "title": "Decentralized Finance Essentials",
@@ -64,6 +76,10 @@ class Command(BaseCommand):
                 "category": "DeFi",
                 "date": date(2024, 3, 15),
                 "certificate": "certificates/defi_essentials_completion.png",
+                "certificate_code": "SAW-F82CB00C00",
+                "claimed": False,
+                "token_id": None,
+                "tx_Hash": None,
             },
             {
                 "title": "Web3 Development Fundamentals",
@@ -71,6 +87,10 @@ class Command(BaseCommand):
                 "category": "Web3",
                 "date": date(2024, 5, 20),
                 "certificate": "certificates/nexora_web3_development.png",
+                "certificate_code": "SAW-4317048481",
+                "claimed": False,
+                "token_id": None,
+                "tx_Hash": None,
             },
         ]
 
@@ -79,7 +99,7 @@ class Command(BaseCommand):
             achievement, _ = Achievement.objects.get_or_create(
                 student=user,
                 title=demo["title"],
-                defaults={**demo, "claimed": False},
+                defaults=demo,
             )
             for field, value in demo.items():
                 setattr(achievement, field, value)
