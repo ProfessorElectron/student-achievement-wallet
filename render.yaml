@@ -13,6 +13,6 @@ services:
       - key: DJANGO_ALLOWED_HOSTS
         value: .onrender.com,student-achievement-wallet-backend.onrender.com
       - key: CORS_ALLOWED_ORIGINS
-        value: http://localhost:5173
+        value: https://student-achievement-wallet-frontend.vercel.app,https://student-achievement-wall-git-79a2ea-professorelectrons-projects.vercel.app,https://student-achievement-wallet-frontend-8ojstnssd.vercel.app,http://localhost:5173
       - key: PYTHON_VERSION
         value: 3.13.5

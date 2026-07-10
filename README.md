@@ -86,6 +86,18 @@ VITE_NFT_CONTRACT_ADDRESS=0x087dcAC90da98fBf897ff1db7B335f51BD8366Fd
 VITE_API_BASE_URL=https://your-deployed-django-backend.example.com
 ```
 
+For the current demo deployment, use:
+
+```env
+VITE_API_BASE_URL=https://student-achievement-wallet-backend.onrender.com
+```
+
+The Render backend must also allow the Vercel frontend origin:
+
+```env
+CORS_ALLOWED_ORIGINS=https://student-achievement-wallet-frontend.vercel.app,https://student-achievement-wall-git-79a2ea-professorelectrons-projects.vercel.app,https://student-achievement-wallet-frontend-8ojstnssd.vercel.app,http://localhost:5173
+```
+
 If `VITE_API_BASE_URL` is missing, the frontend falls back to
 `http://127.0.0.1:8000`, which only works on your laptop. The deployed Vercel
 site needs a deployed Django backend URL for login, achievements, certificates,
