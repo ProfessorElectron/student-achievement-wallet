@@ -24,6 +24,36 @@ A student payment and achievement wallet for issuing, claiming, and verifying st
 * Public certificate verification API
 * Dark mode
 
+## Live Deployment
+
+Frontend:
+
+```text
+https://student-achievement-wallet-frontend.vercel.app/
+```
+
+Backend:
+
+```text
+https://student-achievement-wallet-backend.onrender.com
+```
+
+Sepolia NFT contract:
+
+```text
+0x087dcAC90da98fBf897ff1db7B335f51BD8366Fd
+```
+
+Verified deployment state:
+
+```text
+Render backend health endpoint: OK
+Demo login: OK
+Achievements API: OK
+Vercel-to-Render CORS: OK
+Certificate media serving: OK
+```
+
 ## Project Structure
 
 ```text
